@@ -3,6 +3,7 @@ const fs = require("fs");
 const users = require("./users.json");
 const userAuth = require("./userAuth.json");
 const jwt = require("jsonwebtoken");
+const { getMaxListeners } = require("process");
 
 class Util {
   generateUserId(users) {
@@ -39,30 +40,24 @@ class Util {
   }
 
   addNewUser(form) {
-    fs.readFile("./users.json", (err, data) => {
+    const userList = JSON.parse(fs.readFileSync("./users.json"));
+    const { firstName, lastName, email, phone, password } = form;
+    const id = this.generateUserId(userList);
+    userList.push({
+      id,
+      firstName,
+      lastName,
+      email,
+      phone,
+      type: "member",
+    });
+    fs.writeFileSync("./users.json", JSON.stringify(userList), (err) => {
       if (err) {
         console.log(err);
         throw err;
       }
-      const userList = JSON.parse(data);
-      const { firstName, lastName, email, phone, password } = form;
-      const id = this.generateUserId(userList);
-      userList.push({
-        id,
-        firstName,
-        lastName,
-        email,
-        phone,
-        type: "member",
-      });
-      fs.writeFileSync("./users.json", JSON.stringify(userList), (err) => {
-        if (err) {
-          console.log(err);
-          throw err;
-        }
-      });
-      this.storeEncryptedPassword(id, password);
     });
+    this.storeEncryptedPassword(id, password);
   }
 
   getUserById(uid) {
