@@ -1,5 +1,4 @@
-const util = require("./util.js")
-
+const util = require("./util.js");
 
 class Validator {
   isValidName(name) {
@@ -38,7 +37,7 @@ class Validator {
     return a === b;
   }
 
-  isInvalidSignUp(form) {
+  async isInvalidSignUp(form) {
     let invalid = {};
     if (!this.isValidName(form.firstName)) {
       invalid["firstName"] = "first name is empty";
@@ -61,7 +60,7 @@ class Validator {
       invalid["passwordConfirm"] = "passwords do not match";
     }
     if (Object.keys(invalid).length == 0) {
-      if (util.getUidByEmail(form.email)) {
+      if (await util.getUserByEmail(form.email)) {
         invalid["email"] = "email already exists";
       } else return false;
     }

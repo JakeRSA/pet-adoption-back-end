@@ -1,79 +1,52 @@
+require("dotenv").config();
+
 const bcrypt = require("bcrypt");
-const fs = require("fs");
-const users = require("./users.json");
-const userAuth = require("./userAuth.json");
-const jwt = require("jsonwebtoken");
-const { getMaxListeners } = require("process");
+const { ObjectID, MongoClient } = require("mongodb");
+const dbLocation = process.env.DB_CONNECTION_STRING;
+const dbName = "pet_db";
 
 class Util {
-  generateUserId(users) {
-    const idArray = users.map((user) => {
-      return user.id;
-    });
-    if (idArray.length > 0) {
-      const max = idArray.reduce(function (a, b) {
-        return Math.max(a, b);
-      });
-      return max + 1;
-    }
-    return 1;
-  }
-
-  storeEncryptedPassword(id, password) {
-    const saltRounds = 10;
-    bcrypt.hash(password, saltRounds, function (err, hash) {
-      fs.readFile("./userAuth.json", (err, data) => {
-        if (err) {
-          console.log(err);
-          throw err;
-        }
-        const passwords = JSON.parse(data);
-        passwords.push({ id, password: hash });
-        fs.writeFile("./userAuth.json", JSON.stringify(passwords), (err) => {
-          if (err) {
-            console.log(err);
-            throw err;
-          }
-        });
-      });
-    });
-  }
-
-  addNewUser(form) {
-    const userList = JSON.parse(fs.readFileSync("./users.json"));
+  async addNewUser(form) {
     const { firstName, lastName, email, phone, password } = form;
-    const id = this.generateUserId(userList);
-    userList.push({
-      id,
-      firstName,
-      lastName,
-      email,
-      phone,
-      type: "member",
+    const saltRounds = 10;
+    bcrypt.hash(form.password, saltRounds, async (err, hash) => {
+      if (err) throw err;
+      const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+      await client.connect();
+      const db = client.db(dbName);
+      const users = db.collection("users");
+      const newUser = {
+        firstName,
+        lastName,
+        passwordHash: hash,
+        email,
+        phone,
+        type: "member",
+        dateCreated: new Date().getTime(),
+      };
+      await users.insertOne(newUser);
+      client.close();
     });
-    fs.writeFileSync("./users.json", JSON.stringify(userList), (err) => {
-      if (err) {
-        console.log(err);
-        throw err;
-      }
-    });
-    this.storeEncryptedPassword(id, password);
   }
 
-  getUserById(uid) {
-    for (let user of users) {
-      if (uid === user.id) {
-        return user;
-      }
-    }
+  async getUserById(uid) {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const users = db.collection("users");
+    const query = { _id: ObjectID(uid) };
+    const user = await users.findOne(query);
+    return user;
   }
 
-  getUidByEmail(email) {
-    for (let user of users) {
-      if (email === user.email) {
-        return user.id;
-      }
-    }
+  async getUserByEmail(email) {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const users = db.collection("users");
+    const query = { email: email };
+    const user = await users.findOne(query);
+    return user;
   }
 }
 
