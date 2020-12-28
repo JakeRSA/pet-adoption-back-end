@@ -72,6 +72,11 @@ app.get("/currentuser", async (req, res) => {
   } else res.status(500);
 });
 
+app.get("/users", async (req, res) => {
+  const users = await util.getUsers();
+  res.send(users);
+});
+
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });

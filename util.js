@@ -36,6 +36,7 @@ class Util {
     const users = db.collection("users");
     const query = { _id: ObjectID(uid) };
     const user = await users.findOne(query);
+    client.close();
     return user;
   }
 
@@ -46,7 +47,20 @@ class Util {
     const users = db.collection("users");
     const query = { email: email };
     const user = await users.findOne(query);
+    client.close();
     return user;
+  }
+
+  async getUsers() {
+    let users = [];
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const usersDb = db.collection("users");
+    const result = await usersDb.find();
+    users = await result.toArray();
+    client.close();
+    return users;
   }
 }
 
