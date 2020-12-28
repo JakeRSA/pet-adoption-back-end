@@ -34,7 +34,7 @@ app.post("/signup", async (req, res) => {
   } else {
     util.addNewUser(form);
     const accessToken = jwt.sign(
-      { user: form.email },
+      { user: form.email, type: "member" },
       process.env.ACCESS_TOKEN_SECRET
     );
     res.json({ accessToken, user: form.email });
@@ -51,7 +51,7 @@ app.post("/login", async (req, res) => {
       if (err) throw err;
       if (result) {
         const accessToken = jwt.sign(
-          user.email,
+          { user: user.email, type: user.type },
           process.env.ACCESS_TOKEN_SECRET
         );
         res.json({ accessToken, user: user.email });
@@ -73,8 +73,15 @@ app.get("/currentuser", async (req, res) => {
 });
 
 app.get("/users", async (req, res) => {
-  const users = await util.getUsers();
-  res.send(users);
+  const userType = await util.getUserTypeFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  if (userType != "admin") {
+    res.status(403).send("You require admin rights to access this endpoint");
+  } else {
+    const users = await util.getUsers();
+    res.send(users);
+  }
 });
 
 app.listen(port, () => {

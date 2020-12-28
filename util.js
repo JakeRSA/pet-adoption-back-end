@@ -6,6 +6,15 @@ const dbLocation = process.env.DB_CONNECTION_STRING;
 const dbName = "pet_db";
 
 class Util {
+
+  async getUserTypeFromToken(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace('-', '+').replace('_', '/');
+    const ascii = Buffer.from(base64, 'base64').toString('ascii')
+    const type = JSON.parse(ascii).type;
+    return type;
+  }
+
   async addNewUser(form) {
     const { firstName, lastName, email, phone, password } = form;
     const saltRounds = 10;
@@ -52,13 +61,12 @@ class Util {
   }
 
   async getUsers() {
-    let users = [];
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
     await client.connect();
     const db = client.db(dbName);
     const usersDb = db.collection("users");
     const result = await usersDb.find();
-    users = await result.toArray();
+    const users = await result.toArray();
     client.close();
     return users;
   }
