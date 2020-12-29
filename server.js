@@ -6,7 +6,25 @@ const util = require("./util.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, petImagesDir + "/");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      Date.now() +
+        Math.floor(Math.random() * 1e3) +
+        path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({ storage });
+const petImagesDir = "pet_images";
 const port = 5000;
 const app = express();
 
@@ -20,6 +38,17 @@ const authenticateToken = (req, res, next) => {
     req.user = user;
     next();
   });
+};
+
+const adminOnly = async (req, res, next) => {
+  const userType = await util.getUserTypeFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  if (userType != "admin") {
+    res.status(403).send("You require admin rights to access this endpoint");
+  } else {
+    next();
+  }
 };
 
 app.use(express.json());
@@ -81,6 +110,31 @@ app.get("/users", async (req, res) => {
   } else {
     const users = await util.getUsers();
     res.send(users);
+  }
+});
+
+app.use(adminOnly);
+//EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
+
+const newPetFields = [{ name: "imageFile", maxCount: 1 }];
+
+app.post("/pet", upload.fields(newPetFields), async (req, res) => {
+  const imageFileName = req.files.imageFile[0].filename;
+  console.log(imageFileName);
+  const form = req.body;
+  form.imageFileName = imageFileName;
+  let invalidForm = await validator.isInvalidPet(form);
+  if (invalidForm) {
+    if (!imageFileName) invalidForm["imageFile"] = "must upload an image";
+    else if (![".jpg", ".jpeg", ".png"].includes(imageFileName.split(".")[1]))
+      invalidForm["imageFile"] = "image must be .jpg or .png";
+    fs.unlink(`./${petImagesDir}/` + imageFileName, (err) => {
+      if (err) return;
+    });
+    res.status(400).send(invalidForm);
+  } else {
+    util.addNewPet(form);
+    res.send("added new pet");
   }
 });
 

@@ -1,3 +1,4 @@
+const { truncate } = require("fs");
 const util = require("./util.js");
 
 class Validator {
@@ -18,6 +19,36 @@ class Validator {
 
   isValidPhone(phone) {
     if (phone[0] === "+" && !isNaN(phone.slice(1, phone.length))) {
+      return true;
+    }
+    return false;
+  }
+
+  async isValidAnimalType(animalType) {
+    const animalTypes = await util.getAnimalTypes();
+    if (animalTypes.includes(animalType)) {
+      return true;
+    }
+    return false;
+  }
+
+  isValidBirthDate(birthDateString) {
+    if (isNaN(new Date(birthDateString).getTime())) {
+      return false;
+    }
+    return true;
+  }
+
+  isValidMeasure(measure) {
+    const measureNum = parseInt(measure);
+    if (typeof measureNum === "number" && measureNum > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  isBoolLike(bool) {
+    if (JSON.parse(bool) === true || JSON.parse(bool) === false) {
       return true;
     }
     return false;
@@ -64,6 +95,42 @@ class Validator {
         invalid["email"] = "email already exists";
       } else return false;
     }
+    return invalid;
+  }
+
+  async isInvalidPet(form) {
+    let invalid = {};
+    if (!this.isValidName(form.name)) {
+      invalid["name"] = "first name is empty";
+    }
+    if (!(await this.isValidAnimalType(form.type))) {
+      invalid["type"] = "animal type must be selected from dropdown";
+    }
+    if (!this.isValidName(form.breed)) {
+      invalid[
+        "breed"
+      ] = `${form.type} must have a non-empty breed/species field`;
+    }
+    if (!this.isValidBirthDate(form.birthdate)) {
+      invalid["birthdate"] =
+        "birthdate string cannot be converted into Date object";
+    }
+    if (!this.isValidMeasure(form.weight)) {
+      invalid["weight"] = "weight must be a number greater than 0";
+    }
+    if (!this.isValidMeasure(form.height)) {
+      invalid["height"] = "height must be a number greater than 0";
+    }
+    if (!this.isValidName(form.color)) {
+      invalid["color"] = "color is empty";
+    }
+    if (!this.isBoolLike(form.hypoallergenic)) {
+      invalid["hypoallergenic"] = "must be a boolean";
+    }
+    if (Object.keys(invalid).length == 0) {
+      return false;
+    }
+
     return invalid;
   }
 }

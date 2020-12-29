@@ -6,11 +6,10 @@ const dbLocation = process.env.DB_CONNECTION_STRING;
 const dbName = "pet_db";
 
 class Util {
-
   async getUserTypeFromToken(token) {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace('-', '+').replace('_', '/');
-    const ascii = Buffer.from(base64, 'base64').toString('ascii')
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace("-", "+").replace("_", "/");
+    const ascii = Buffer.from(base64, "base64").toString("ascii");
     const type = JSON.parse(ascii).type;
     return type;
   }
@@ -31,11 +30,55 @@ class Util {
         email,
         phone,
         type: "member",
-        dateCreated: new Date().getTime(),
       };
       await users.insertOne(newUser);
       client.close();
     });
+  }
+
+  async addNewPet(form, imageFileName) {
+    const {
+      name,
+      type,
+      breed,
+      birthdate,
+      weight,
+      height,
+      color,
+      hypoallergenic,
+      diet,
+      bio,
+    } = form;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    const newPet = {
+      name,
+      type,
+      breed,
+      birthdate: new Date(birthdate).getTime(),
+      weight: parseInt(weight),
+      height: parseInt(height),
+      color,
+      hypoallergenic: JSON.parse(hypoallergenic),
+      diet,
+      bio,
+      status: "available",
+      imageFileName,
+    };
+    await pets.insertOne(newPet);
+    client.close();
+  }
+
+  async getAnimalTypes() {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const configCol = db.collection("config");
+    const config = await configCol.findOne();
+    client.close();
+    return config.animalTypes;
   }
 
   async getUserById(uid) {
