@@ -156,6 +156,40 @@ app.put("/pet/:id/return", async (req, res) => {
   res.send(`pet with id ${petId} returned by user with id ${uid}`);
 });
 
+app.put("/pet/:id/save", async (req, res) => {
+  const petId = req.params.id;
+  if (!(await util.getPetById(petId))) {
+    res.sendStatus(404);
+  }
+  const userEmail = await util.getEmailFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  const user = await util.getUserByEmail(userEmail);
+  const uid = user._id;
+  const updatedUser = await util.savePetToUser(petId, uid);
+  if (!updatedUser) res.sendStatus(400);
+  res.send(
+    `saved pet with id ${petId} to saved pets list for user with id ${uid}`
+  );
+});
+
+app.delete("/pet/:id/save", async (req, res) => {
+  const petId = req.params.id;
+  if (!(await util.getPetById(petId))) {
+    res.sendStatus(404);
+  }
+  const userEmail = await util.getEmailFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  const user = await util.getUserByEmail(userEmail);
+  const uid = user._id;
+  const updatedUser = await util.removeSavedPet(petId, uid);
+  if (!updatedUser) res.sendStatus(400);
+  res.send(
+    `removed pet with id ${petId} from saved pets list for user with id ${uid}`
+  );
+});
+
 app.use(adminOnly);
 //EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
 

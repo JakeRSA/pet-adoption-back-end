@@ -174,7 +174,7 @@ class Util {
     };
     const pet = await pets.findOneAndUpdate(filter, updateDoc);
     client.close();
-    return pet;
+    return pet.value;
   }
 
   async returnPet(petId, userId) {
@@ -193,7 +193,43 @@ class Util {
     };
     const pet = await pets.findOneAndUpdate(filter, updateDoc);
     client.close();
-    return pet;
+    return pet.value;
+  }
+
+  async savePetToUser(petId, uid) {
+    const pet = await this.getPetById(petId);
+    if (!pet) return false;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const users = db.collection("users");
+    const filter = {
+      _id: ObjectID(uid),
+      savedPetIds: { $nin: [ObjectID(petId)] },
+    };
+    const updateDoc = {
+      $push: { savedPetIds: ObjectID(petId) },
+    };
+    const user = await users.findOneAndUpdate(filter, updateDoc);
+    return user.value;
+  }
+
+  async removeSavedPet(petId, uid) {
+    const pet = await this.getPetById(petId);
+    if (!pet) return false;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const users = db.collection("users");
+    const filter = {
+      _id: ObjectID(uid),
+      savedPetIds: { $in: [ObjectID(petId)] },
+    };
+    const updateDoc = {
+      $pull: { savedPetIds: ObjectID(petId) },
+    };
+    const user = await users.findOneAndUpdate(filter, updateDoc);
+    return user.value;
   }
 
   async getUserById(uid) {
