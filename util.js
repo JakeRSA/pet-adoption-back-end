@@ -172,9 +172,28 @@ class Util {
         carerId: userId,
       },
     };
-    const pet = await pets.updateOne(filter, updateDoc);
+    const pet = await pets.findOneAndUpdate(filter, updateDoc);
     client.close();
-    return true;
+    return pet;
+  }
+
+  async returnPet(petId, userId) {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    const filter = { _id: ObjectID(petId), carerId: ObjectID(userId) };
+    const updateDoc = {
+      $set: {
+        status: "available",
+      },
+      $unset: {
+        carerId: "",
+      },
+    };
+    const pet = await pets.findOneAndUpdate(filter, updateDoc);
+    client.close();
+    return pet;
   }
 
   async getUserById(uid) {
