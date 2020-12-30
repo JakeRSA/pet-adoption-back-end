@@ -14,6 +14,14 @@ class Util {
     return type;
   }
 
+  async getEmailFromToken(token) {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace("-", "+").replace("_", "/");
+    const ascii = Buffer.from(base64, "base64").toString("ascii");
+    const email = JSON.parse(ascii).user;
+    return email;
+  }
+
   async addNewUser(form) {
     const { firstName, lastName, email, phone, password } = form;
     const saltRounds = 10;
@@ -107,7 +115,6 @@ class Util {
       },
     };
     const result = await pets.updateOne(filter, updateDoc);
-    console.log(result);
     client.close();
   }
 
@@ -147,6 +154,27 @@ class Util {
     const matches = await result.toArray();
     client.close();
     return matches;
+  }
+
+  async adoptPet(petId, userId, type) {
+    if (!["foster", "adopt"].includes(type)) {
+      return false;
+    }
+
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    const filter = { _id: ObjectID(petId) };
+    const updateDoc = {
+      $set: {
+        status: type === "foster" ? "foster" : "has owner",
+        carerId: userId,
+      },
+    };
+    const pet = await pets.updateOne(filter, updateDoc);
+    client.close();
+    return true;
   }
 
   async getUserById(uid) {

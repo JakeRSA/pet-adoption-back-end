@@ -125,6 +125,22 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.put("/pet/:id/adopt", async (req, res) => {
+  const petId = req.params.id;
+  if (!(await util.getPetById(petId))) {
+    res.sendStatus(404);
+  }
+  const type = req.body.type;
+  const userEmail = await util.getEmailFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  const user = await util.getUserByEmail(userEmail);
+  const uid = user._id;
+  const adopted = await util.adoptPet(petId, uid, type);
+  if (!adopted) res.sendStatus(400);
+  res.send(`pet with id ${petId} ${type}ed by user with id ${uid}`);
+});
+
 app.use(adminOnly);
 //EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
 
