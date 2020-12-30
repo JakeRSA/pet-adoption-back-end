@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
-const petImagesDir = "pet_images";
+const petImagesDir = "public/pet_images";
 const port = 5000;
 const app = express();
 
@@ -51,8 +51,8 @@ const adminOnly = async (req, res, next) => {
   }
 };
 
+app.use(express.static("public"));
 app.use(express.json());
-
 app.use(cors({ origin: true, credentials: true }));
 
 app.post("/signup", async (req, res) => {
