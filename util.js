@@ -72,6 +72,45 @@ class Util {
     client.close();
   }
 
+  async editPet(form, id) {
+    const {
+      name,
+      type,
+      breed,
+      birthdate,
+      weight,
+      height,
+      color,
+      hypoallergenic,
+      imageFileName,
+      diet,
+      bio,
+    } = form;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    const filter = { _id: ObjectID(id) };
+    const updateDoc = {
+      $set: {
+        name,
+        type,
+        breed,
+        birthdate: new Date(birthdate).getTime(),
+        weight: parseInt(weight),
+        height: parseInt(height),
+        color,
+        hypoallergenic: JSON.parse(hypoallergenic),
+        imageFileName,
+        diet,
+        bio,
+      },
+    };
+    const result = await pets.updateOne(filter, updateDoc);
+    console.log(result);
+    client.close();
+  }
+
   async getAnimalTypes() {
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
     await client.connect();

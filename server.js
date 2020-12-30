@@ -144,6 +144,25 @@ app.post("/pet", upload.fields(newPetFields), async (req, res) => {
   }
 });
 
+app.put("/pet/:id", upload.fields(newPetFields), async (req, res) => {
+  const imageFileName = req.files.imageFile[0].filename;
+  const form = req.body;
+  form.imageFileName = imageFileName;
+  let invalidForm = await validator.isInvalidPet(form);
+  if (invalidForm) {
+    if (!imageFileName) invalidForm["imageFile"] = "must upload an image";
+    else if (![".jpg", ".jpeg", ".png"].includes(imageFileName.split(".")[1]))
+      invalidForm["imageFile"] = "image must be .jpg or .png";
+    fs.unlink(`./${petImagesDir}/` + imageFileName, (err) => {
+      if (err) return;
+    });
+    res.status(400).send(invalidForm);
+  } else {
+    util.editPet(form, req.params.id);
+    res.send("successfully edited pet details");
+  }
+});
+
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
