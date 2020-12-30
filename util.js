@@ -121,6 +121,34 @@ class Util {
     return config.animalTypes;
   }
 
+  async searchAllPets(query) {
+    if (query.birthdate) {
+      query.birthdate = new Date(query.birthdate).getTime();
+    }
+    if (query.weight) {
+      query.weight = parseInt(query.weight);
+    }
+    if (query.height) {
+      query.height = parseInt(query.height);
+    }
+    if (query.hypoallergenic) {
+      query.hypoallergenic = JSON.parse(query.hypoallergenic);
+    }
+
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    const options = {
+      sort: { name: 1 },
+      projection: { name: 1, status: 1, imageFileName: 1 },
+    };
+    const result = await pets.find(query, options);
+    const matches = await result.toArray();
+    client.close();
+    return matches;
+  }
+
   async getUserById(uid) {
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
     await client.connect();

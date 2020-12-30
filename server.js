@@ -98,6 +98,11 @@ app.get("/pet/:id", async (req, res) => {
   else res.status(404).send(`No animal found with id ${id}`);
 });
 
+app.get("/pet", async (req, res) => {
+  const results = await util.searchAllPets(req.query);
+  res.send(results);
+});
+
 app.use(authenticateToken);
 // EVERYTHING REQUIRING LOGIN MUST BE BELOW HERE
 
