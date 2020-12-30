@@ -190,6 +190,13 @@ app.delete("/pet/:id/save", async (req, res) => {
   );
 });
 
+app.get("/pet/user/:id", async (req, res) => {
+  const uid = req.params.id;
+  const pets = await util.getPetsByUserId(uid);
+  if (!pets) res.sendStatus(404);
+  res.send(pets);
+});
+
 app.use(adminOnly);
 //EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
 

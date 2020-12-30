@@ -258,8 +258,8 @@ class Util {
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
     await client.connect();
     const db = client.db(dbName);
-    const usersDb = db.collection("users");
-    const result = await usersDb.find();
+    const usersCol = db.collection("users");
+    const result = await usersCol.find();
     const users = await result.toArray();
     client.close();
     return users;
@@ -278,6 +278,20 @@ class Util {
     } catch (e) {
       return false;
     }
+  }
+
+  async getPetsByUserId(uid) {
+    const user = await this.getUserById(uid);
+    if (!user) return false;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const petsCol = db.collection("pets");
+    const query = { carerId: ObjectID(uid) };
+    const result = await petsCol.find(query);
+    const pets = await result.toArray();
+    client.close();
+    return pets;
   }
 }
 
