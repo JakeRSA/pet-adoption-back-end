@@ -120,7 +120,6 @@ const newPetFields = [{ name: "imageFile", maxCount: 1 }];
 
 app.post("/pet", upload.fields(newPetFields), async (req, res) => {
   const imageFileName = req.files.imageFile[0].filename;
-  console.log(imageFileName);
   const form = req.body;
   form.imageFileName = imageFileName;
   let invalidForm = await validator.isInvalidPet(form);

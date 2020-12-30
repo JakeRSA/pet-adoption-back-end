@@ -36,7 +36,7 @@ class Util {
     });
   }
 
-  async addNewPet(form, imageFileName) {
+  async addNewPet(form) {
     const {
       name,
       type,
@@ -46,6 +46,7 @@ class Util {
       height,
       color,
       hypoallergenic,
+      imageFileName,
       diet,
       bio,
     } = form;
