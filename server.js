@@ -91,6 +91,13 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/pet/:id", async (req, res) => {
+  const id = req.params.id;
+  const pet = await util.getPetById(id);
+  if (pet) res.send(pet);
+  else res.status(404).send(`No animal found with id ${id}`);
+});
+
 app.use(authenticateToken);
 // EVERYTHING REQUIRING LOGIN MUST BE BELOW HERE
 

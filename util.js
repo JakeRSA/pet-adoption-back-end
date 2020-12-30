@@ -114,6 +114,21 @@ class Util {
     client.close();
     return users;
   }
+
+  async getPetById(petId) {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const pets = db.collection("pets");
+    try {
+      const query = { _id: ObjectID(petId) };
+      const pet = await pets.findOne(query);
+      client.close();
+      return pet;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 module.exports = new Util();
