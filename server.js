@@ -113,18 +113,6 @@ app.get("/currentuser", async (req, res) => {
   } else res.status(500);
 });
 
-app.get("/users", async (req, res) => {
-  const userType = await util.getUserTypeFromToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  if (userType != "admin") {
-    res.status(403).send("You require admin rights to access this endpoint");
-  } else {
-    const users = await util.getUsers();
-    res.send(users);
-  }
-});
-
 app.put("/pet/:id/adopt", async (req, res) => {
   const petId = req.params.id;
   if (!(await util.getPetById(petId))) {
@@ -271,6 +259,11 @@ app.put("/pet/:id", upload.fields(newPetFields), async (req, res) => {
     util.editPet(form, req.params.id);
     res.send("successfully edited pet details");
   }
+});
+
+app.get("/user", async (req, res) => {
+  const users = await util.getUsers();
+  res.send(users);
 });
 
 app.listen(port, () => {

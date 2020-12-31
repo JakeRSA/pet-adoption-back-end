@@ -282,7 +282,11 @@ class Util {
     await client.connect();
     const db = client.db(dbName);
     const usersCol = db.collection("users");
-    const result = await usersCol.find();
+    const options = {
+      sort: { firstName: 1 },
+      projection: { firstName: 1, lastName: 1, email: 1, phone: 1, type: 1 },
+    };
+    const result = await usersCol.find({}, options);
     const users = await result.toArray();
     client.close();
     return users;
