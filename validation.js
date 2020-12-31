@@ -101,7 +101,7 @@ class Validator {
   async isInvalidPet(form) {
     let invalid = {};
     if (!this.isValidName(form.name)) {
-      invalid["name"] = "first name is empty";
+      invalid["name"] = "name is empty";
     }
     if (!(await this.isValidAnimalType(form.type))) {
       invalid["type"] = "animal type must be selected from dropdown";
@@ -131,6 +131,32 @@ class Validator {
       return false;
     }
 
+    return invalid;
+  }
+
+  async isInvalidUserUpdate(oldEmail, form) {
+    let invalid = {};
+    if (!this.isValidName(form.firstName)) {
+      invalid["firstName"] = "first name is empty";
+    }
+    if (!this.isValidName(form.lastName)) {
+      invalid["lastName"] = "last name is empty";
+    }
+    if (!this.isValidEmail(form.email)) {
+      invalid["email"] = "email is invalid";
+    }
+    if (!this.isValidPhone(form.phone)) {
+      invalid["phone"] =
+        "phone num is invalid - must be in format +ccnnnnnn where cc is country code and n are remaining digits";
+    }
+    if (form.email != oldEmail) {
+      if (await util.getUserByEmail(form.email)) {
+        invalid["email"] = "email already exists";
+      }
+    }
+    if (Object.keys(invalid).length == 0) {
+      return false
+    }
     return invalid;
   }
 }

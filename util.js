@@ -229,6 +229,29 @@ class Util {
       $pull: { savedPetIds: ObjectID(petId) },
     };
     const user = await users.findOneAndUpdate(filter, updateDoc);
+    client.close();
+    return user.value;
+  }
+
+  async editUserSettings(uid, form) {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const users = db.collection("users");
+    const filter = {
+      _id: ObjectID(uid),
+    };
+    const updateDoc = {
+      $set: {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        bio: form.bio,
+      },
+    };
+    const user = await users.findOneAndUpdate(filter, updateDoc);
+    client.close();
     return user.value;
   }
 

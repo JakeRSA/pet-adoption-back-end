@@ -197,6 +197,39 @@ app.get("/pet/user/:id", async (req, res) => {
   res.send(pets);
 });
 
+app.put("/user/:id", async (req, res) => {
+  const uid = req.params.id;
+  const tokenEmail = await util.getEmailFromToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  const tokenUser = await util.getUserByEmail(tokenEmail);
+  if (!tokenUser || uid != tokenUser._id) {
+    res.sendStatus(400);
+    return;
+  }
+  const form = req.body;
+  const invalidForm = await validator.isInvalidUserUpdate(tokenEmail, form);
+  if (invalidForm) {
+    res.status(400).send(invalidForm);
+    return;
+  }
+  const updatedUser = await util.editUserSettings(uid, form);
+  if (!updatedUser) {
+    res.sendStatus(500);
+    return;
+  }
+  //need to send updated token if email was changed
+  if (form.email != tokenEmail) {
+    const accessToken = jwt.sign(
+      { user: form.email, type: tokenUser.type },
+      process.env.ACCESS_TOKEN_SECRET
+    );
+    res.send({ accessToken, user: form.email });
+    return;
+  }
+  res.send("done");
+});
+
 app.use(adminOnly);
 //EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
 
