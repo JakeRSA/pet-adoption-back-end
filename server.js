@@ -103,14 +103,39 @@ app.get("/pet", async (req, res) => {
   res.send(results);
 });
 
+app.get("/user/:id", async (req, res) => {
+  const id = req.params.id;
+  const user = await util.getUserById(id);
+  if (!user) {
+    res.sendStatus(400);
+    return;
+  }
+  const partialUser = {
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    bio: user.bio,
+  };
+  res.send(partialUser);
+});
+
 app.get("/user/:id/full", async (req, res) => {
   const id = req.params.id;
   const user = await util.getUserById(id);
+  if (!user) {
+    res.sendStatus(400);
+    return;
+  }
   res.send(user);
 });
 
 app.use(authenticateToken);
-// EVERYTHING REQUIRING LOGIN MUST BE BELOW HERE
+
+/*
+EVERYTHING REQUIRING LOGIN MUST BE BELOW HERE
+*/
 
 app.get("/currentuser", async (req, res) => {
   const user = await util.getUserByEmail(req.headers.user_email);
@@ -225,7 +250,10 @@ app.put("/user/:id", async (req, res) => {
 });
 
 app.use(adminOnly);
-//EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
+
+/*
+EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
+*/
 
 const newPetFields = [{ name: "imageFile", maxCount: 1 }];
 
