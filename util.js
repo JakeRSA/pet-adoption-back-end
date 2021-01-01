@@ -261,7 +261,8 @@ class Util {
     const db = client.db(dbName);
     const users = db.collection("users");
     const query = { _id: ObjectID(uid) };
-    const user = await users.findOne(query);
+    const options = { projection: { passwordHash: 0 } };
+    const user = await users.findOne(query, options);
     client.close();
     return user;
   }

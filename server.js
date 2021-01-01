@@ -103,6 +103,12 @@ app.get("/pet", async (req, res) => {
   res.send(results);
 });
 
+app.get("/user/:id/full", async (req, res) => {
+  const id = req.params.id;
+  const user = await util.getUserById(id);
+  res.send(user);
+});
+
 app.use(authenticateToken);
 // EVERYTHING REQUIRING LOGIN MUST BE BELOW HERE
 
