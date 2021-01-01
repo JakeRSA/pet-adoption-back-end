@@ -44,6 +44,24 @@ class Util {
     });
   }
 
+  async changePassword(uid, newPassword) {
+    const saltRounds = 10;
+    await bcrypt.hash(newPassword, saltRounds, async (err, hash) => {
+      if (err) throw err;
+      const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+      await client.connect();
+      const db = client.db(dbName);
+      const users = db.collection("users");
+      const filter = { _id: ObjectID(uid) };
+      const updateDoc = {
+        $set: {
+          passwordHash: hash,
+        },
+      };
+      const user = await users.findOneAndUpdate(filter, updateDoc);
+    });
+  }
+
   async addNewPet(form) {
     const {
       name,
@@ -262,8 +280,7 @@ class Util {
     const users = db.collection("users");
     try {
       const query = { _id: ObjectID(uid) };
-      const options = { projection: { passwordHash: 0 } };
-      const user = await users.findOne(query, options);
+      const user = await users.findOne(query);
       client.close();
       return user;
     } catch (e) {

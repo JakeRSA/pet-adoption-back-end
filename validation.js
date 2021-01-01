@@ -159,6 +159,20 @@ class Validator {
     }
     return invalid;
   }
+
+  isInvalidPasswordForm(form) {
+    let invalid = {};
+    if (!this.isValidPassword(form.newPassword)) {
+      invalid["newPassword"] = "password must include a number, a letter and be at least 6 chars long eg. passw0rd";
+    }
+    if (!this.passWordsMatch(form.newPassword, form.newPasswordConfirm)) {
+      invalid["newPasswordConfirm"] = "passwords do not match";
+    }
+    if (Object.keys(invalid).length == 0) {
+      return false;
+    }
+    return invalid;
+  }
 }
 
 module.exports = new Validator();

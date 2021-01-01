@@ -128,7 +128,33 @@ app.get("/user/:id/full", async (req, res) => {
     res.sendStatus(400);
     return;
   }
-  res.send(user);
+  const { passwordHash, ...passwordlessUser } = user;
+  res.send(passwordlessUser);
+});
+
+app.put("/user/:id/password", async (req, res) => {
+  const id = req.params.id;
+  const user = await util.getUserById(id);
+  if (!user) {
+    res.status(400).send("user id not found in database");
+    return;
+  }
+  const form = req.body;
+  const invalidForm = validator.isInvalidPasswordForm(form);
+  if (invalidForm) {
+    res.status(400).send(invalidForm);
+    return;
+  }
+  bcrypt.compare(form.oldPassword, user.passwordHash, async (err, result) => {
+    if (err) throw err;
+    if (result) {
+      util
+        .changePassword(id, form.newPassword)
+        .then(res.send("successfully changed password"));
+    } else {
+      res.status(400).send({ password: "old password is incorrect" });
+    }
+  });
 });
 
 app.use(authenticateToken);
