@@ -293,10 +293,14 @@ class Util {
     await client.connect();
     const db = client.db(dbName);
     const users = db.collection("users");
-    const query = { email: email };
-    const user = await users.findOne(query);
-    client.close();
-    return user;
+    try {
+      const query = { email: email };
+      const user = await users.findOne(query);
+      client.close();
+      return user;
+    } catch (e) {
+      client.close();
+    }
   }
 
   async getUsers() {
@@ -337,6 +341,21 @@ class Util {
     const db = client.db(dbName);
     const petsCol = db.collection("pets");
     const query = { carerId: ObjectID(uid) };
+    const result = await petsCol.find(query);
+    const pets = await result.toArray();
+    client.close();
+    return pets;
+  }
+
+  async getSavedPetsByUserId(uid) {
+    const user = await this.getUserById(uid);
+    if (!user) return false;
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const petsCol = db.collection("pets");
+    const petIds = user.savedPetIds.map((id) => ObjectID(id));
+    const query = { _id: { $in: petIds } };
     const result = await petsCol.find(query);
     const pets = await result.toArray();
     client.close();

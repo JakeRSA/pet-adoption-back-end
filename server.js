@@ -159,7 +159,7 @@ app.put("/user/:id/password", async (req, res) => {
 
 app.get("/types", async (req, res) => {
   const types = await util.getAnimalTypes();
-  res.send(types);
+  res.json(types);
 });
 
 app.use(authenticateToken);
@@ -210,6 +210,7 @@ app.put("/pet/:id/save", async (req, res) => {
   const petId = req.params.id;
   if (!(await util.getPetById(petId))) {
     res.sendStatus(404);
+    return;
   }
   const userEmail = await util.getEmailFromToken(
     req.headers.authorization.split(" ")[1]
@@ -217,7 +218,10 @@ app.put("/pet/:id/save", async (req, res) => {
   const user = await util.getUserByEmail(userEmail);
   const uid = user._id;
   const updatedUser = await util.savePetToUser(petId, uid);
-  if (!updatedUser) res.sendStatus(400);
+  if (!updatedUser) {
+    res.sendStatus(400);
+    return;
+  }
   res.send(
     `saved pet with id ${petId} to saved pets list for user with id ${uid}`
   );
@@ -244,6 +248,16 @@ app.get("/pet/user/:id", async (req, res) => {
   const uid = req.params.id;
   const pets = await util.getPetsByUserId(uid);
   if (!pets) res.sendStatus(404);
+  res.send(pets);
+});
+
+app.get("/saved/user/:id", async (req, res) => {
+  const uid = req.params.id;
+  const pets = await util.getSavedPetsByUserId(uid);
+  if (!pets) {
+    res.sendStatus(404);
+    return;
+  }
   res.send(pets);
 });
 
