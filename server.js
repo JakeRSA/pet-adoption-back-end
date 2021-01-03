@@ -157,6 +157,11 @@ app.put("/user/:id/password", async (req, res) => {
   });
 });
 
+app.get("/types", async (req, res) => {
+  const types = await util.getAnimalTypes();
+  res.send(types);
+});
+
 app.use(authenticateToken);
 
 /*
