@@ -94,8 +94,9 @@ class Util {
       status: "available",
       imageFileName,
     };
-    await pets.insertOne(newPet);
+    const newPetDoc = await pets.insertOne(newPet);
     client.close();
+    return newPetDoc.insertedId;
   }
 
   async editPet(form, id) {

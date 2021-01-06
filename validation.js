@@ -109,7 +109,7 @@ class Validator {
     if (!this.isValidName(form.breed)) {
       invalid[
         "breed"
-      ] = `${form.type} must have a non-empty breed/species field`;
+      ] = `must have a non-empty breed field - for animals that aren't cats or dogs, input species in this field`;
     }
     if (!this.isValidBirthDate(form.birthdate)) {
       invalid["birthdate"] =
@@ -155,7 +155,7 @@ class Validator {
       }
     }
     if (Object.keys(invalid).length == 0) {
-      return false
+      return false;
     }
     return invalid;
   }
@@ -163,7 +163,8 @@ class Validator {
   isInvalidPasswordForm(form) {
     let invalid = {};
     if (!this.isValidPassword(form.newPassword)) {
-      invalid["newPassword"] = "password must include a number, a letter and be at least 6 chars long eg. passw0rd";
+      invalid["newPassword"] =
+        "password must include a number, a letter and be at least 6 chars long eg. passw0rd";
     }
     if (!this.passWordsMatch(form.newPassword, form.newPasswordConfirm)) {
       invalid["newPasswordConfirm"] = "passwords do not match";

@@ -303,7 +303,10 @@ EVERYTHING REQUIRING ADMIN RIGHTS MUST BE BELOW HERE
 const newPetFields = [{ name: "imageFile", maxCount: 1 }];
 
 app.post("/pet", upload.fields(newPetFields), async (req, res) => {
-  const imageFileName = req.files.imageFile[0].filename;
+  let imageFileName;
+  try {
+    imageFileName = req.files.imageFile[0].filename;
+  } catch (e) {}
   const form = req.body;
   form.imageFileName = imageFileName;
   let invalidForm = await validator.isInvalidPet(form);
@@ -316,8 +319,8 @@ app.post("/pet", upload.fields(newPetFields), async (req, res) => {
     });
     res.status(400).send(invalidForm);
   } else {
-    util.addNewPet(form);
-    res.send("added new pet");
+    const newPetId = await util.addNewPet(form);
+    res.send(newPetId);
   }
 });
 
