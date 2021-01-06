@@ -146,18 +146,30 @@ class Util {
     return config.animalTypes;
   }
 
-  async searchAllPets(query) {
-    if (query.birthdate) {
-      query.birthdate = new Date(query.birthdate).getTime();
+  async searchAllPets(formQuery) {
+    let dbQuery = {};
+    if (formQuery.name) dbQuery.name = formQuery.name;
+    if (formQuery.status) dbQuery.status = formQuery.status;
+    if (formQuery.type) dbQuery.type = formQuery.type;
+    if (formQuery.birthdate) {
+      dbQuery.birthdate = new Date(formQuery.birthdate).getTime();
     }
-    if (query.weight) {
-      query.weight = parseInt(query.weight);
+    if (formQuery.minWeight || formQuery.maxWeight) {
+      dbQuery.weight = {};
+      if (formQuery.minWeight)
+        dbQuery.weight.$gte = parseInt(formQuery.minWeight);
+      if (formQuery.maxWeight)
+        dbQuery.weight.$lte = parseInt(formQuery.maxWeight);
     }
-    if (query.height) {
-      query.height = parseInt(query.height);
+    if (formQuery.minHeight || formQuery.maxHeight) {
+      dbQuery.height = {};
+      if (formQuery.minHeight)
+        dbQuery.height.$gte = parseInt(formQuery.minHeight);
+      if (formQuery.maxHeight)
+        dbQuery.height.$lte = parseInt(formQuery.maxHeight);
     }
-    if (query.hypoallergenic) {
-      query.hypoallergenic = JSON.parse(query.hypoallergenic);
+    if (formQuery.hypoallergenic) {
+      dbQuery.hypoallergenic = JSON.parse(formQuery.hypoallergenic);
     }
 
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
@@ -168,7 +180,7 @@ class Util {
       sort: { name: 1 },
       projection: { name: 1, status: 1, imageFileName: 1 },
     };
-    const result = await pets.find(query, options);
+    const result = await pets.find(dbQuery, options);
     const matches = await result.toArray();
     client.close();
     return matches;
@@ -350,6 +362,7 @@ class Util {
   async getSavedPetsByUserId(uid) {
     const user = await this.getUserById(uid);
     if (!user) return false;
+    if (!user.savedPetIds || user.savedPetIds.length == 0) return [];
     const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
     await client.connect();
     const db = client.db(dbName);

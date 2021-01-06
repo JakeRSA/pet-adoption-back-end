@@ -322,13 +322,14 @@ app.post("/pet", upload.fields(newPetFields), async (req, res) => {
 });
 
 app.put("/pet/:id", upload.fields(newPetFields), async (req, res) => {
-  const imageFileName = req.files.imageFile[0].filename;
   const form = req.body;
-  form.imageFileName = imageFileName;
+  if (Object.keys(req.files).length > 0) {
+    const imageFileName = req.files.imageFile[0].filename;
+    form.imageFileName = imageFileName;
+  }
   let invalidForm = await validator.isInvalidPet(form);
   if (invalidForm) {
-    if (!imageFileName) invalidForm["imageFile"] = "must upload an image";
-    else if (![".jpg", ".jpeg", ".png"].includes(imageFileName.split(".")[1]))
+    if (![".jpg", ".jpeg", ".png"].includes(imageFileName.split(".")[1]))
       invalidForm["imageFile"] = "image must be .jpg or .png";
     fs.unlink(`./${petImagesDir}/` + imageFileName, (err) => {
       if (err) return;
