@@ -18,7 +18,7 @@ class Validator {
   }
 
   isValidPhone(phone) {
-    if (phone[0] === "+" && !isNaN(phone.slice(1, phone.length))) {
+    if (!isNaN(phone)) {
       return true;
     }
     return false;
@@ -81,7 +81,7 @@ class Validator {
     }
     if (!this.isValidPhone(form.phone)) {
       invalid["phone"] =
-        "phone num is invalid - must be in format +ccnnnnnn where cc is country code and n are remaining digits";
+        "phone num is invalid - must be in format ccnnnnnn where cc is country code and n are remaining digits";
     }
     if (!this.isValidPassword(form.password)) {
       invalid["password"] =
