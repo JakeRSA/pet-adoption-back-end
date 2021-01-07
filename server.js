@@ -312,8 +312,9 @@ app.post("/pet", upload.fields(newPetFields), async (req, res) => {
   let invalidForm = await validator.isInvalidPet(form);
   if (invalidForm) {
     if (!imageFileName) invalidForm["imageFile"] = "must upload an image";
-    else if (![".jpg", ".jpeg", ".png"].includes(imageFileName.split(".")[1]))
-      invalidForm["imageFile"] = "image must be .jpg or .png";
+    else if (!["jpg", "jpeg", "png"].includes(imageFileName.split(".")[1]))
+      console.log(imageFileName);
+    invalidForm["imageFile"] = "image must be .jpg or .png";
     fs.unlink(`./${petImagesDir}/` + imageFileName, (err) => {
       if (err) return;
     });

@@ -104,7 +104,8 @@ class Validator {
       invalid["name"] = "name is empty";
     }
     if (!(await this.isValidAnimalType(form.type))) {
-      invalid["type"] = "animal type must be selected from dropdown";
+      invalid["type"] =
+        "invalid animal type - contact server admin for details";
     }
     if (!this.isValidName(form.breed)) {
       invalid[
