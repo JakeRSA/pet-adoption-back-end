@@ -61,7 +61,7 @@ app.post("/signup", async (req, res) => {
   if (invalidForm) {
     res.status(400).send(invalidForm);
   } else {
-    util.addNewUser(form);
+    await util.addNewUser(form);
     const accessToken = jwt.sign(
       { user: form.email, type: "member" },
       process.env.ACCESS_TOKEN_SECRET
