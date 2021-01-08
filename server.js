@@ -313,7 +313,6 @@ app.post("/pet", upload.fields(newPetFields), async (req, res) => {
   if (invalidForm) {
     if (!imageFileName) invalidForm["imageFile"] = "must upload an image";
     else if (!["jpg", "jpeg", "png"].includes(imageFileName.split(".")[1]))
-      console.log(imageFileName);
     invalidForm["imageFile"] = "image must be .jpg or .png";
     fs.unlink(`./${petImagesDir}/` + imageFileName, (err) => {
       if (err) return;
@@ -349,6 +348,10 @@ app.get("/user", async (req, res) => {
   const users = await util.getUsers();
   res.send(users);
 });
+
+setInterval(()=> {
+  util.cleanUpImages()
+}, 1000 * 60 * 60 * 24)
 
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);

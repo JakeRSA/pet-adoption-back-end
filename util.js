@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const bcrypt = require("bcrypt");
+const fs = require("fs");
 const { ObjectID, MongoClient } = require("mongodb");
 const dbLocation = process.env.DB_CONNECTION_STRING;
 const dbName = "pet_db";
@@ -374,6 +375,33 @@ class Util {
     const pets = await result.toArray();
     client.close();
     return pets;
+  }
+
+  async getImageFileNames() {
+    const client = new MongoClient(dbLocation, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(dbName);
+    const petsCol = db.collection("pets");
+    const options = { projection: { _id: 0, imageFileName: 1 } };
+    const result = await petsCol.find({}, options);
+    const fileNames = await result.toArray();
+    client.close();
+    return fileNames.map((fileNameObj) => fileNameObj.imageFileName);
+  }
+
+  async cleanUpImages() {
+    const imagesPath = "./public/pet_images/";
+    const dbFileNames = await this.getImageFileNames();
+    fs.readdir(imagesPath, (err, files) => {
+      if (err) throw err;
+      files.forEach((file) => {
+        if (!dbFileNames.includes(file)) {
+          fs.unlink(imagesPath + file, (err) => {
+            if (err) throw err;
+          });
+        }
+      });
+    });
   }
 }
 
