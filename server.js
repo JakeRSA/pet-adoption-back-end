@@ -53,7 +53,7 @@ const adminOnly = async (req, res, next) => {
 
 app.use(express.static("public"));
 app.use(express.json());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
 
 app.post("/signup", async (req, res) => {
   const form = req.body;
