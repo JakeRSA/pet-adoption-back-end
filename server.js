@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 const petImagesDir = "public/pet_images";
-const port = 5000;
+const port = process.env.PORT || 5000;
 const app = express();
 
 const authenticateToken = (req, res, next) => {
@@ -354,5 +354,5 @@ setInterval(()=> {
 }, 1000 * 60 * 60 * 24)
 
 app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
+  console.log(`Listening`);
 });
